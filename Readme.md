@@ -1,7 +1,7 @@
 # Личный проект «Кексобукинг» [![Build status][travis-image]][travis-url]
 
 * Студент: [Юлия Обухова](https://up.htmlacademy.ru/javascript/10/user/488747).
-* Наставник: `Неизвестно`.
+* Наставник: `Александр Вагнер`.
 
 ---
 
