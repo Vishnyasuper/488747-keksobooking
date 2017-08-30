@@ -22,6 +22,8 @@ var pinListElement = userDialog.querySelector('.tokyo__pin-map');
 
 var lodgeAdvertTemplate = document.querySelector('#lodge-template').content;
 
+var dialogPanel = userDialog.querySelector('.dialog__panel');
+
 var getRandomObject = function (avatar, title, type, checkin, checout, features, count) {
 
   var advertsArray = [];
@@ -119,7 +121,9 @@ var adverts = getRandomObject(ADVERT_AVATAR, ADVERT_TITLE, ADVERT_TYPE, ADVERT_C
 
 var fragment = document.createDocumentFragment();
 for (var i = 0; i < adverts.length; i++) {
-  fragment.appendChild(createPin(renderAdvert(adverts[i])));
+  fragment.appendChild(renderAdvert(adverts[i]));
 }
-pinListElement.appendChild(fragment);
+dialogPanel.appendChild(fragment);
+
+//pinListElement.appendChild(fragment);
 
