@@ -8,49 +8,49 @@ var ADVERT_TYPE = ['flat', 'house', 'bungalo'];
 
 var ADVERT_CHECKIN_CHECOUT = ['12:00', '13:00', '14:00'];
 
-//var ADVERT_CHECKOUT = ['12:00', '13:00', '14:00'];
-
 var ADVERT_FEATURES = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
 
 var ADVERT_COUNT = 8;
 
 var sizePin = {};
 
-var userDialog = document.querySelector('.tokyo');
-
-var pinListElement = userDialog.querySelector('.tokyo__pin-map');
+var pinsMap = document.querySelector('.tokyo__pin-map');
 
 var lodgeAdvertTemplate = document.querySelector('#lodge-template').content;
 
-var dialogPanel = userDialog.querySelector('.dialog__panel');
+var offerDialog = document.querySelector('#offer-dialog');
 
-var getRandomObject = function (avatar, title, type, checkin, checout, features, count) {
+var dialogPanel = offerDialog.querySelector('.dialog__panel');
 
+var getRandomAdverts = function (avatars, titles, types, check, features, count) {
   var advertsArray = [];
+  var avatarsArray = avatars.slice();
+  var titlesArray = titles.slice();
 
   for (var i = 0; i < count; i++) {
+    var locX = getRandomReal(300, 900);
+    var locY = getRandomReal(100, 500);
     advertsArray[i] = {
       author: {
-        avatar: getRandomize(ADVERT_AVATAR)
-        // avatar: 'img/avatars/user0' + getRandomize(ADVERT_AVATAR) + '.png'
+        avatar: getNoRepeatValue(avatarsArray)
       },
 
       offer: {
-        title: getRandomize(ADVERT_TITLE),
-        address: 'location.' + 'x' + ', ' + 'location.' + 'y',
+        title: getNoRepeatValue(titlesArray),
+        address: locX + ', ' + locY,
         price: getRandomInt(1000, 1000000),
-        type: getRandomize(ADVERT_TYPE),
+        type: getRandomize(types),
         rooms: getRandomInt(1, 5),
         guests: getRandomInt(1, 10),
-        checkin: getRandomize(ADVERT_CHECKIN_CHECOUT),
-        checkout: getRandomize(ADVERT_CHECKIN_CHECOUT),
-        features: getRandomize(ADVERT_FEATURES),
-        description: 'null',
+        checkin: getRandomize(check),
+        checkout: getRandomize(check),
+        features: getRandomArray(features),
+        description: '',
         photos: []
       },
       location: {
-        x: getRandomReal(300, 900),
-        y: getRandomReal(100, 500)
+        x: locX,
+        y: locY
       }
     };
   }
@@ -70,12 +70,39 @@ function getRandomReal(min, max) {
   return Math.random() * (max - min) + min;
 }
 
+var getNoRepeatValue = function (array) {
+  var index = getRandomNum(array.length);
+  var value = array[index];
+  array.splice(index, 1);
+  return value;
+};
+
+var getRandomNum = function (num) {
+  return Math.floor(Math.random() * num);
+};
+
+var getRandomArray = function (array) {
+  var newArray = [];
+  var randomCount = getRandomNum(array.length);
+  var value = null;
+  while (randomCount > 0) {
+    value = array[getRandomNum(array.length)];
+    if (newArray.indexOf(value) !== -1) {
+      continue;
+    } else {
+      newArray.push(value);
+      randomCount--;
+    }
+  }
+  return newArray;
+};
+
 var getSizePin = function (element) {
   var param = {};
-  pinListElement.appendChild(element);
+  pinsMap.appendChild(element);
   param.halfWidth = element.clientWidth / 2;
   param.height = element.clientHeight;
-  pinListElement.removeChild(element);
+  pinsMap.removeChild(element);
   return param;
 };
 
@@ -96,34 +123,42 @@ var createPin = function (pinAds) {
   return pinElement;
 };
 
+var renderPin = function (arrayPin) {
+  var fragment = document.createDocumentFragment();
+  for (var i = 0; i < arrayPin.length; i++) {
+    fragment.appendChild(createPin(arrayPin[i]));
+  }
+  pinsMap.appendChild(fragment);
+};
 
-var renderAdvert = function (advertsArray) {
+var renderAdvert = function (dialogElement) {
   var advertElement = lodgeAdvertTemplate.cloneNode(true);
 
-  advertElement.querySelector('.lodge__title').textContent = advertsArray.offer.title;
-  advertElement.querySelector('.lodge__address').textContent = advertsArray.offer.address;
-  advertElement.querySelector('.lodge__price').textContent = advertsArray.offer.price + '#x20bd;/ночь';
-  advertElement.querySelector('.lodge__type').textContent = advertsArray.offer.type;
-  advertElement.querySelector('.lodge__rooms-and-guests').textContent = 'Для ' + advertsArray.offer.guests + 'гостей в ' + advertsArray.offer.rooms + 'комнатах';
-  advertElement.querySelector('.lodge__checkin-time').textContent = 'Заезд после ' + advertsArray.offer.checkin + ', выезд до ' + advertsArray.offer.checkout;
+  advertElement.querySelector('.lodge__title').textContent = dialogElement.offer.title;
+  advertElement.querySelector('.lodge__address').textContent = dialogElement.offer.address;
+  advertElement.querySelector('.lodge__price').textContent = dialogElement.offer.price + ' \u20BD/ночь';
+  advertElement.querySelector('.lodge__type').textContent = dialogElement.offer.type;
+  advertElement.querySelector('.lodge__rooms-and-guests').textContent = 'Для ' + dialogElement.offer.guests + ' гостей в ' + dialogElement.offer.rooms + ' комнатах';
+  advertElement.querySelector('.lodge__checkin-time').textContent = 'Заезд после ' + dialogElement.offer.checkin + ', выезд до ' + dialogElement.offer.checkout;
   var allFeatures = advertElement.querySelector('.lodge__features');
-  for (var i = 0; i < advertsArray.offer.features.length; i++) {
+  for (var i = 0; i < dialogElement.offer.features.length; i++) {
     var span = document.createElement('span');
-    span.className = 'feature__image feature__image--' + advertsArray.offer.features[i];
+    span.className = 'feature__image feature__image--' + dialogElement.offer.features[i];
     allFeatures.appendChild(span);
   }
-  advertElement.querySelector('.lodge__description').textContent = advertsArray.offer.description;
+  advertElement.querySelector('.lodge__description').textContent = dialogElement.offer.description;
 
   return advertElement;
 };
 
-var adverts = getRandomObject(ADVERT_AVATAR, ADVERT_TITLE, ADVERT_TYPE, ADVERT_CHECKIN_CHECOUT, ADVERT_FEATURES, ADVERT_COUNT);
+var replaceDialog = function (adsElement) {
+  var dialogTitle = offerDialog.querySelector('.dialog__title');
+  var dialogImage = dialogTitle.querySelector('img');
+  dialogImage.src = adsElement.author.avatar;
+  offerDialog.replaceChild(renderAdvert(adsElement), dialogPanel);
+};
 
-var fragment = document.createDocumentFragment();
-for (var i = 0; i < adverts.length; i++) {
-  fragment.appendChild(renderAdvert(adverts[i]));
-}
-dialogPanel.appendChild(fragment);
+var adverts = getRandomAdverts(ADVERT_AVATAR, ADVERT_TITLE, ADVERT_TYPE, ADVERT_CHECKIN_CHECOUT, ADVERT_FEATURES, ADVERT_COUNT);
 
-//pinListElement.appendChild(fragment);
-
+renderPin(adverts);
+replaceDialog(adverts[0]);
