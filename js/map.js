@@ -1,6 +1,8 @@
 // Файл map.js
 'use strict';
 
+var ESC_KEYCODE = 27;
+var ENTER_KEYCODE = 13;
 var ADVERT_AVATAR = ['img/avatars/user01.png', 'img/avatars/user02.png', 'img/avatars/user03.png', 'img/avatars/user04.png', 'img/avatars/user05.png', 'img/avatars/user06.png', 'img/avatars/user07.png', 'img/avatars/user08.png'];
 
 var ADVERT_TITLE = ['Большая уютная квартира', 'Маленькая неуютная квартира', 'Огромный прекрасный дворец', 'Маленький ужасный дворец', 'Красивый гостевой домик', 'Некрасивый негостеприимный домик', 'Уютное бунгало далеко от моря', 'Неуютное бунгало по колено в воде'];
@@ -21,7 +23,7 @@ var lodgeAdvertTemplate = document.querySelector('#lodge-template').content;
 
 var offerDialog = document.querySelector('#offer-dialog');
 
-var dialogPanel = offerDialog.querySelector('.dialog__panel');
+var dialogClose = offerDialog.querySelector('.dialog__close');
 
 var getRandomAdverts = function (avatars, titles, types, check, features, count) {
   var advertsArray = [];
@@ -115,6 +117,7 @@ var createPin = function (pinAds) {
   pinImage.className = 'rounded';
   pinImage.width = '40';
   pinImage.height = '40';
+  pinElement.tabIndex = '0';
   if (!sizePin.height) {
     sizePin = getSizePin(pinElement);
   }
@@ -155,11 +158,71 @@ var renderAdvert = function (dialogElement) {
 var replaceDialog = function (adsElement) {
   var dialogTitle = offerDialog.querySelector('.dialog__title');
   var dialogImage = dialogTitle.querySelector('img');
+  var dialogPanel = offerDialog.querySelector('.dialog__panel');
   dialogImage.src = adsElement.author.avatar;
   offerDialog.replaceChild(renderAdvert(adsElement), dialogPanel);
+  offerDialog.tabIndex = '0';
+};
+
+var clearActivePin = function () {
+  var clearActiveClass = pinsMap.querySelector('.pin--active');
+  if (clearActiveClass) {
+    clearActiveClass.classList.remove('pin--active');
+  }
+};
+
+var activeDialog = function (element) {
+  var parent = element.parentNode;
+  for (var i = 0; i < parent.children.length; i++) {
+    if (parent.children[i] === element) {
+      replaceDialog(adverts[i - 1]);
+    }
+  }
+};
+
+var setActivePin = function (evt) {
+  clearActivePin();
+  offerDialog.classList.remove('hidden');
+  var currentElement = evt.currentTarget;
+  currentElement.className += ' pin--active';
+  activeDialog(currentElement);
+};
+
+var onEnterPress = function (evt) {
+  if (evt.keyCode === ENTER_KEYCODE) {
+    setActivePin(evt);
+  }
+};
+
+var onEnterClose = function (evt) {
+  evt.stopPropagation();
+  if (evt.keyCode === ENTER_KEYCODE) {
+    closeDialog();
+  }
+};
+
+var closeDialog = function () {
+  offerDialog.classList.add('hidden');
+  clearActivePin();
+};
+
+var onEscPress = function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    closeDialog();
+  }
 };
 
 var adverts = getRandomAdverts(ADVERT_AVATAR, ADVERT_TITLE, ADVERT_TYPE, ADVERT_CHECKIN_CHECOUT, ADVERT_FEATURES, ADVERT_COUNT);
 
 renderPin(adverts);
 replaceDialog(adverts[0]);
+
+var activePins = pinsMap.querySelectorAll('.pin');
+for (var i = 0; i < activePins.length; i++) {
+  activePins[i].addEventListener('click', setActivePin);
+  activePins[i].addEventListener('keydown', onEnterPress);
+}
+
+dialogClose.addEventListener('click', closeDialog);
+dialogClose.addEventListener('keydown', onEnterClose);
+offerDialog.addEventListener('keydown', onEscPress);
