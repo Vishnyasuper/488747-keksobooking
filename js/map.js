@@ -25,6 +25,14 @@ var offerDialog = document.querySelector('#offer-dialog');
 
 var dialogClose = offerDialog.querySelector('.dialog__close');
 
+var formContent = document.querySelector('.form__content');
+var timeIn = formContent.querySelector('#timein');
+var timeOut = formContent.querySelector('#timeout');
+var typeHouse = formContent.querySelector('#type');
+var priceHouse = formContent.querySelector('#price');
+var roomNumber = formContent.querySelector('#room_number');
+var capacity = formContent.querySelector('#capacity');
+
 var getRandomAdverts = function (avatars, titles, types, check, features, count) {
   var advertsArray = [];
   var avatarsArray = avatars.slice();
@@ -212,6 +220,57 @@ var onEscPress = function (evt) {
   }
 };
 
+var autoTimeInOut = function (evt) {
+  if (evt.target.id === 'timein') {
+    timeOut.value = evt.target.value;
+  } else {
+    timeIn.value = evt.target.value;
+  }
+};
+
+var getPriceHouse = function (evt) {
+  var value = evt.target.value;
+  switch (value) {
+    case 'flat':
+      priceHouse.min = 1000;
+      priceHouse.value = 1000;
+      break;
+    case 'bungalo':
+      priceHouse.min = 0;
+      priceHouse.value = 0;
+      break;
+    case 'house':
+      priceHouse.min = 5000;
+      priceHouse.value = 5000;
+      break;
+    case 'palace':
+      priceHouse.min = 10000;
+      priceHouse.value = 10000;
+      break;
+  }
+};
+
+var getCapacity = function (evt) {
+  var value = evt.target.value;
+  switch (value) {
+    case '1':
+      capacity.value = 1;
+      break;
+    case '2':
+      capacity.value = 1;
+      capacity.value = 2;
+      break;
+    case '3':
+      capacity.value = 1;
+      capacity.value = 2;
+      capacity.value = 3;
+      break;
+    case '100':
+      capacity.value = 0;
+      break;
+  }
+};
+
 var adverts = getRandomAdverts(ADVERT_AVATAR, ADVERT_TITLE, ADVERT_TYPE, ADVERT_CHECKIN_CHECOUT, ADVERT_FEATURES, ADVERT_COUNT);
 
 renderPin(adverts);
@@ -226,3 +285,7 @@ for (var i = 0; i < activePins.length; i++) {
 dialogClose.addEventListener('click', closeDialog);
 dialogClose.addEventListener('keydown', onEnterClose);
 offerDialog.addEventListener('keydown', onEscPress);
+timeIn.addEventListener('change', autoTimeInOut);
+timeOut.addEventListener('change', autoTimeInOut);
+typeHouse.addEventListener('change', getPriceHouse);
+roomNumber.addEventListener('change', getCapacity);
